@@ -6,8 +6,8 @@
 #=========================================================================================
 
 base_url = "https://example.com"      # Domain name of your website
-title = "xxxx"
-description = "xxxx xxxx xxxx"
+title = "portfolio"
+description = "i0ta's portfolio"
 default_language = "en"
 theme = "serene"
 output_dir = "public"
@@ -41,17 +41,17 @@ anchors = "on"
 
 [extra]
 
-name = "xxxx"                         # Your name
-id = "xxxx"                           # Your id / username / handle
-bio = "xxxx"                          # Your bio
-avatar = "img/avatar.webp"            # Your avatar
-links = [                             # Your links
-    { name = "GitHub", icon = "github", url = "https://github.com/<your-username>" },
-    { name = "Twitter", icon = "twitter", url = "https://twitter.com/<your-username>" },
-    { name = "Email", icon = "email", url = "mailto:<your-email-address>" },
+name = "KantaTamura"
+id = "i0ta"
+bio = "Student"
+avatar = "img/avatar.webp"
+links = [
+    { name = "GitHub", icon = "github", url = "https://github.com/KantaTamura" },
+    { name = "Twitter", icon = "twitter", url = "https://twitter.com/@Kanta_phi" },
+    { name = "Email", icon = "email", url = "mailto:kanta03085@gmail.com" },
 ]
 
-homepage_layout = "about"             # "about" | "list" | "recent"
+homepage_layout = "about"
 
 recent_max = 15
 recent_more = true
@@ -60,8 +60,7 @@ recent_more_text = "more »"
 sections = [
     { name = "blog", path = "/blog", is_external = false },
     { name = "projects", path = "/projects", is_external = false },
-    { name = "about", path = "/about", is_external = false }
-    # { name = "github", path = "https://github.com/<your-username>", is_external = true },
+    { name = "about", path = "/about", is_external = false },
 ]
 blog_section_path = "/blog"
 
@@ -86,7 +85,7 @@ outdate_alert_days = 120              # How many days will a post be outdated by
 outdate_alert_text_before = "This article was last updated "
 outdate_alert_text_after = " days ago and may be out of date."
 
-footer_copyright = "© 2023 <your-name>"
+footer_copyright = "© 2023 KantaTamura"
 footer_credits = true                 # Whether to show "powered by zola and serene" in footer
 
 not_found_title = "404"
