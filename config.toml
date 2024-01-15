@@ -51,7 +51,7 @@ links = [
     { name = "Email", icon = "email", url = "mailto:kanta03085@gmail.com" },
 ]
 
-homepage_layout = "about"
+homepage_layout = "recent"
 
 recent_max = 15
 recent_more = true
