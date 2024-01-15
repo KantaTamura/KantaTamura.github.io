@@ -46,9 +46,10 @@ id = "i0ta"
 bio = "Student"
 avatar = "img/avatar.webp"
 links = [
-    { name = "GitHub", icon = "github", url = "https://github.com/KantaTamura" },
-    { name = "Twitter", icon = "twitter", url = "https://twitter.com/@Kanta_phi" },
-    { name = "Email", icon = "email", url = "mailto:kanta03085@gmail.com" },
+    { name = "GitHub"   , icon = "github"   , url = "https://github.com/KantaTamura"         },
+    { name = "Twitter"  , icon = "twitter-x", url = "https://twitter.com/@Kanta_phi"         },
+    { name = "Instagram", icon = "instagram", url = "https://www.instagram.com/kanta.graph/" },
+    { name = "Email"    , icon = "email"    , url = "mailto:kanta03085@gmail.com"            },
 ]
 
 homepage_layout = "recent"
