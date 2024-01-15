@@ -1,19 +1,24 @@
 [[project]]
-name = ""
-desc = ""
-tags = ["", ""]
-img = ""
+name = "「東京フレンドパーク」フラッシュザウルス"
+desc = "2019年11月 高専祭クラス展示 <br> arduinoと加速度センサを用いて「東京フレンドパーク」という番組のフラッシュザウルスを再現した."
+tags = ["高専祭", "arduino"]
 links = [
-  { name = "", url = "" },
-  { name = "", url = "" },
+    {name = "movie" , url = "https://www.youtube.com/watch?v=JFokvtyFgsk#t=2m34s"},
 ]
 
 [[project]]
-name = ""
-desc = ""
-tags = ["", ""]
-img = ""
+name = "16*16ディスプレイ・オーディオビジュアライザー"
+desc = "2020年11月 高専祭クラス展示 <br> arduinoとLED, バンドパスフィルタを用いてディスプレイやオーディオビジュアライザーを作成した."
+tags = ["高専祭", "arduino"]
 links = [
-  { name = "", url = "" },
-  { name = "", url = "" },
+    {name = "movie - display" , url = "https://www.youtube.com/watch?v=JFokvtyFgsk#t=1m23s"},
+    {name = "movie - audio visualizer" , url = "https://www.youtube.com/watch?v=JFokvtyFgsk#t=5m29s"},
+]
+
+[[project]]
+name = "wireshark CSP dissector"
+desc = "2023年10月 space cubicインターン <br> CSP - Cubesat Space Protocol用のwireshark dissectorを作成した."
+tags = ["wireshark", "CSP"]
+links = [
+    {name = "github" , url = "https://github.com/KantaTamura/CSP-dissector"},
 ]
