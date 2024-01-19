@@ -59,9 +59,9 @@ recent_more = true
 recent_more_text = "more »"
 
 sections = [
-    { name = "blog", path = "/blog", is_external = false },
+    { name = "blog",     path = "/blog",     is_external = false },
     { name = "projects", path = "/projects", is_external = false },
-    { name = "about", path = "/about", is_external = false },
+    { name = "about",    path = "/about",    is_external = false },
 ]
 blog_section_path = "/blog"
 
@@ -86,8 +86,8 @@ outdate_alert_days = 120              # How many days will a post be outdated by
 outdate_alert_text_before = "This article was last updated "
 outdate_alert_text_after = " days ago and may be out of date."
 
-footer_copyright = "© 2023 KantaTamura"
-footer_credits = true                 # Whether to show "powered by zola and serene" in footer
+footer_copyright = "© 2024 KantaTamura"
+footer_credits = false
 
 not_found_title = "404"
 not_found_error_text = "Not Found"
