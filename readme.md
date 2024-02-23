@@ -21,3 +21,11 @@ $ cp -r templates/_custom_css.html ../../templates/_custom_css.html
 $ cp -r highlight_themes ../..
 $ cp -r static/icon ../../static
 ```
+
+> [!NOTE]
+> edit content width (768px to 1012px)
+> ```
+> --homepage-max-width: 1012px;
+> --main-max-width: 1012px;
+> ```
+> `templates/_custom_css.html`
