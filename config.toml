@@ -8,7 +8,7 @@
 base_url = "https://kantatamura.github.io/"
 title = "portfolio"
 description = "i0ta's portfolio"
-default_language = "en"
+default_language = "ja"
 theme = "serene"
 output_dir = "public"
 compile_sass = true
@@ -36,6 +36,11 @@ smart_punctuation = false
 paths = "on"
 taxonomies = "on"
 anchors = "on"
+
+[languages.en]
+generate_feed = true
+build_search_index = true
+taxonomies = [{ name = "tags" }, { name = "categories" }]
 
 #=========================================================================================
 

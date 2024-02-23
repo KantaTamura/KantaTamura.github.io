@@ -5,7 +5,7 @@ template = "prose.html"
 insert_anchor_links = "none"
 
 [extra]
-lang = 'en'
+lang = "ja"
 math = false
 mermaid = false
 copy = false

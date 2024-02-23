@@ -1,6 +1,6 @@
 +++
-template = 'home.html'
+template = "home.html"
 
 [extra]
-lang = 'en'
+lang = "ja"
 +++

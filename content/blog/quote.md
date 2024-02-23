@@ -8,6 +8,7 @@ categories = ["Example"]
 tags = ["serene", "quote"]
 
 [extra]
+lang = "en"
 toc = false
 comment = false
 +++

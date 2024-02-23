@@ -8,5 +8,5 @@ insert_anchor_links = "right"
 generate_feed = true
 
 [extra]
-lang = 'en'
+lang = "ja"
 +++
