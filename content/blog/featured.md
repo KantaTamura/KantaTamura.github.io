@@ -2,6 +2,7 @@
 title = "Featured Post"
 date = 2024-02-23
 description = "Featured post"
+draft = true
 
 [taxonomies]
 categories = ["Example"]

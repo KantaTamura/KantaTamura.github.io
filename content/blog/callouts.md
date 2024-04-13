@@ -2,6 +2,7 @@
 title = "Callouts"
 date = 2024-02-23
 discription = "Example post showing callouts"
+draft = true
 
 [taxonomies]
 categories = ["Example"]
