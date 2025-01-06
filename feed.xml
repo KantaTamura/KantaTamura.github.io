@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
+	<title>portfolio</title>
+	<subtitle>kanta&#x27;s portfolio</subtitle>
+	<link href="https://kantatamura.github.io/feed.xml" rel="self" type="application/atom+xml"/>
+    <link href="https://kantatamura.github.io/"/>
+	<updated>2023-11-14T00:00:00+00:00</updated>
+	<id>https://kantatamura.github.io/feed.xml</id>
+	<entry xml:lang="ja">
+		<title>space cubicsでRaspberry Pi組み込み開発をした話</title>
+		<published>2023-11-14T00:00:00+00:00</published>
+		<updated>2023-11-14T00:00:00+00:00</updated>
+		<link href="https://kantatamura.github.io/blog/spacecubics/" type="text/html"/>
+		<id>https://kantatamura.github.io/blog/spacecubics/</id>
+		<content type="html">&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;zenn.dev&#x2F;117324&#x2F;articles&#x2F;3f7ec8879660ed&quot;&gt;Zennの記事&lt;&#x2F;a&gt;もよろしくお願いします!!&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h1 id=&quot;space-cubicstoha&quot;&gt;space cubicsとは？&lt;a class=&quot;zola-anchor&quot; href=&quot;#space-cubicstoha&quot; aria-label=&quot;Anchor link for: space-cubicstoha&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;spacecubics.com&#x2F;&quot;&gt;&lt;strong&gt;space cubics&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;さんはJAXA発のベンチャー企業で、ごりごりの宇宙屋さんというよりも、宇宙でも問題なく動く高品質なプロセッサを開発している会社です。&lt;&#x2F;p&gt;
+&lt;p&gt;ソフトウェア・FPGA・回路設計それぞれのプロフェッショナルが在籍していて、協力しあって素晴らしい製品を開発しています。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;he-wositaka&quot;&gt;何をしたか？&lt;a class=&quot;zola-anchor&quot; href=&quot;#he-wositaka&quot; aria-label=&quot;Anchor link for: he-wositaka&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;2023年8月からCubeSat SC-Sat1という小型衛星に乗せるRaspberry Piボード (下図：ZeroとPicoが乗っている) の開発を行うインターンをさせていただきました。&lt;&#x2F;p&gt;
+&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;14b357f1ffd5-20231030.jpg&quot;  alt=&quot;SC-Sat1&quot;&gt;
+    
+    &lt;figcaption&gt;SC-Sat1&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;a837e827b95d-20230927.jpg&quot;  alt=&quot;scsat1-rpi&quot;&gt;
+    
+    &lt;figcaption&gt;scsat1-rpi&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;
+&lt;p&gt;このRaspberry Piモジュールは、SC-Sat1のカメラモジュールとして機能し、下記のミッションを達成するために開発が行われました。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;宇宙で写真撮影を行い、指定した写真をdownlinkする&lt;&#x2F;li&gt;
+&lt;li&gt;Raspberry Pi Zero&lt;sup class=&quot;footnote-reference&quot;&gt;&lt;a href=&quot;#1&quot;&gt;1&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; &#x2F; Pico&lt;sup class=&quot;footnote-reference&quot;&gt;&lt;a href=&quot;#2&quot;&gt;2&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; の放射線耐性を確認する&lt;&#x2F;li&gt;
+&lt;li&gt;SC Busのセンサーノードとして、Raspberry Pi Picoを使用する&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;メインのコンピュータとZero間はCAN Bus、ZeroとPico間はUARTで接続されており、その上を&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;libcsp&#x2F;libcsp&quot;&gt;CSP (Cubesat Space Protocol)&lt;&#x2F;a&gt;を載せたパケットが通信を行います。&lt;&#x2F;p&gt;
+&lt;p&gt;僕は主にこの通信周りに関わりました。成果は&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;spacecubics&#x2F;scsat1-rpi&quot;&gt;このリポジトリ&lt;&#x2F;a&gt;にあります。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;kitukake&quot;&gt;きっかけ&lt;a class=&quot;zola-anchor&quot; href=&quot;#kitukake&quot; aria-label=&quot;Anchor link for: kitukake&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;7月末で院試が終了し、夏休みにはインターンを経験したいと考えていました。
+そのとき、&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;twitter.com&#x2F;KOBA789&#x2F;status&#x2F;1669729522663714816&quot;&gt;KOBA789さんのツイート&lt;&#x2F;a&gt;を見かけ、「基板カッコいいなぁ、触ってみたいなぁ」と感じ、応募しました！
+(低レイヤーのインターンがめずらしいというのも理由の1つです笑)&lt;&#x2F;p&gt;
+&lt;p&gt;正直に言うと、宇宙については全くの未経験でしたが、高専の授業や趣味でRaspberry Piに触れた経験はあったので、不安と期待が入り混じった気持ちでした笑&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ying-mu-cai-yong-made&quot;&gt;応募～採用まで&lt;a class=&quot;zola-anchor&quot; href=&quot;#ying-mu-cai-yong-made&quot; aria-label=&quot;Anchor link for: ying-mu-cai-yong-made&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;TwitterのDMが開放されていなかったため、ホームページのお問い合わせフォームを使って連絡を取りました。すぐに返信があり、meetで面談することになりました。&lt;&#x2F;p&gt;
+&lt;p&gt;技術系のインターンの面接は初めての経験で、緊張しましたが、面談ではRaspberry Piを触ったことがあること、低レイヤーに興味があること、高専で作成した作品についてなどを30分ほど話したかなと思います。&lt;&#x2F;p&gt;
+&lt;p&gt;面談から約1週間後、採用のメールを受け取りました！とてもうれしかったですが、応募者が4名全員採用されたようです笑。インターン初年度で、来る者拒まずという感じだったと後で聞きました笑&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;8yue-zhong&quot;&gt;8月中&lt;a class=&quot;zola-anchor&quot; href=&quot;#8yue-zhong&quot; aria-label=&quot;Anchor link for: 8yue-zhong&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;raspberrypi-osshang-denokai-fa&quot;&gt;RaspberryPi OS上での開発&lt;a class=&quot;zola-anchor&quot; href=&quot;#raspberrypi-osshang-denokai-fa&quot; aria-label=&quot;Anchor link for: raspberrypi-osshang-denokai-fa&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;Zeroはリソースが潤沢なので、Linuxを動かすのですが、組み込みLinuxを作成するための&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;www.yoctoproject.org&#x2F;&quot;&gt;Yocto&lt;&#x2F;a&gt;というプロジェクトを用いました。&lt;&#x2F;p&gt;
+&lt;p&gt;Yoctoはレシピの作成など、ややこしい部分が多いため、まずはRaspberryPi OS上で実装し、Yoctoに移植する形で開発がスタートしました。&lt;&#x2F;p&gt;
+&lt;p&gt;僕がRaspberryPi OS上で行ったことは下記の内容です。&lt;&#x2F;p&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;ZeroがCAN Controller (MCP2517FD) を認識できるようにする&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;使用したいデバイス情報は&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;raspberrypi&#x2F;linux&quot;&gt;RaspberryPi OSカーネル&lt;&#x2F;a&gt;に組み込まれているため、使用するように &lt;code&gt;config.txt&lt;&#x2F;code&gt; を書き換えます。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dtparam=spi=on
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dtoverlay=mcp251xfd,oscillator=20000000,interrupt=25
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;MCP251xFD&lt;&#x2F;code&gt; というデバイスツリーを適切なパラメータ (発振周波数や割り込みGPIOピン) を与えて有効化します。&lt;&#x2F;p&gt;
+&lt;p&gt;このようにすると、 &lt;code&gt;ip&lt;&#x2F;code&gt; コマンドなどで CANインターフェースが表示され、RaspberryPi OSからCAN通信を行うことができるようになります。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;ZeroとPC間でCAN通信が行えることを確認する&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;通常のPCはCANインターフェースを持たないので、&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;www.microchip.com&#x2F;en-us&#x2F;development-tool&#x2F;apgdt002&quot;&gt;MicrochipのCAN bus analyzer&lt;&#x2F;a&gt;を用います。&lt;&#x2F;p&gt;
+&lt;p&gt;Windows環境よりもLinux環境のほうが後々便利そうなので、WSL (Windows Subsystem for Linux) を用いて環境を整備しました。(次節)&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; class=&quot;language-sh z-code&quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;$&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; cangen can0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;sh&quot; class=&quot;language-sh z-code&quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;$&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; candump can0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  0ED   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;8&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  37 D0 12 66 BB 9F 61 0D&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  5EB   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;8&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  02 B6 4B 50 F7 CC CF 02&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  07E   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;8&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  3A E2 A8 2C 26 BE 3F 6C&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  68F   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;8&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  42 00 1E 69 E4 6A 87 37&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  2A7   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;2&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  17 FE&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;  &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;can0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;  57B   &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;1&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;  AB&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;...&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;上記のログの用にCSPの下位プロトコルであるCANで疎通することを確認しました。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;Zeroでlibcspのexampleコードを動かす&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;libcsp&#x2F;libcsp&quot;&gt;CSP&lt;&#x2F;a&gt;はCubesatなどの小規模なネットワーク間で通信を行うためのプロトコルで、現在も開発が盛んなOSSです。(サンプルプログラムが動かなくなることもしばしば...笑)&lt;&#x2F;p&gt;
+&lt;p&gt;とりあえずサンプルプログラムを動かしてみようと思い、exampleフォルダ内のコード (&lt;code&gt;csp-server-client&lt;&#x2F;code&gt;) を動かしてみました。&lt;&#x2F;p&gt;
+&lt;p&gt;現在のバージョンでは治っていますが、当時は自身のIDを設定できないといった不具合があり、動かすまで苦戦しました。&lt;&#x2F;p&gt;
+&lt;p&gt;ビルドシステムは &lt;code&gt;waf&lt;&#x2F;code&gt; &lt;code&gt;mason&lt;&#x2F;code&gt; &lt;code&gt;cmake&lt;&#x2F;code&gt; の３つあり、今回は &lt;code&gt;waf&lt;&#x2F;code&gt; を用いてビルドしました。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ .&#x2F;waf configure --enable-examples --with-driver-usart=linux --with-os=posix --enable-can-socketcan build
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;ビルドが成功すれば、 &lt;code&gt;csp-server-client&lt;&#x2F;code&gt; という実行ファイルが生成されているはずで、
+&lt;code&gt;-c can0&lt;&#x2F;code&gt; とCANインターフェースを指定すればCANを用いたCSP通信が可能です。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;details ZeroとPC間でCSP通信が行えることを確認する&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;RaspberryPi ZeroとWSLそれぞれでlibcspのexampleをビルドし、 &lt;code&gt;csp-server-client&lt;&#x2F;code&gt; を動かせる状態になれば、下記のように疎通が確認できるはずです。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; class=&quot;language-sh z-code&quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;$&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; .&#x2F;build&#x2F;examples&#x2F;csp_server_client&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;c&lt;&#x2F;span&gt; can0&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;a&lt;&#x2F;span&gt; 10&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;r&lt;&#x2F;span&gt; 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Initialising&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; CSPINIT CAN: device: &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;can0&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;, bitrate: 0, promisc: 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Connection&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; table&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[00&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbebe0] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (17&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[01&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbecf0] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (18&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[02&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbee00] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (19&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[03&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbef10] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (20&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[04&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbf020] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (21&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[05&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbf130] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (22&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[06&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbf240] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (23&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[07&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x55a505cbf350] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (24&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Interfaces&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;LOOP&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;       addr: 0 netmask: 14 mtu: 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;tx:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 rx: 00000 txe: 00000 rxe: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;drop:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 autherr: 00000 frame: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;txb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;rxb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;CAN&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;        addr: 10 netmask: 0 mtu: 248&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;tx:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 rx: 00000 txe: 00000 rxe: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;drop:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 autherr: 00000 frame: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;txb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;rxb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Route&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; table&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;0&#x2F;0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; CAN&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Client&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; task startedPing address: 20, result&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;1&lt;&#x2F;span&gt; &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result 10 &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result 50 &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;1&lt;&#x2F;span&gt; &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;1&lt;&#x2F;span&gt; &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result 98 &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;1&lt;&#x2F;span&gt; &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Ping&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; address: 20, result&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;1&lt;&#x2F;span&gt; &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;mS&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;reboot&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; system request sent to address: 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;...&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;sh&quot; class=&quot;language-sh z-code&quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;$&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; .&#x2F;build&#x2F;examples&#x2F;csp_server_client&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;c&lt;&#x2F;span&gt; can0&lt;span class=&quot;z-variable z-parameter z-option z-shell&quot;&gt;&lt;span class=&quot;z-punctuation z-definition z-parameter z-shell&quot;&gt; -&lt;&#x2F;span&gt;a&lt;&#x2F;span&gt; 20&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Initialising&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; CSPINIT CAN: device: &lt;span class=&quot;z-keyword z-control z-regexp z-set z-begin z-shell&quot;&gt;[&lt;&#x2F;span&gt;can0&lt;span class=&quot;z-keyword z-control z-regexp z-set z-end z-shell&quot;&gt;]&lt;&#x2F;span&gt;, bitrate: 0, promisc: 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Connection&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; table&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[00&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d438] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (17&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[01&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d4e8] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (18&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[02&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d598] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (19&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[03&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d648] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (20&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[04&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d6f8] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (21&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[05&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d7a8] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (22&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[06&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d858] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (23&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;[07&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0x2d908] S:0, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt;, 0 -&lt;span class=&quot;z-keyword z-operator z-assignment z-redirection z-shell&quot;&gt;&amp;gt;&lt;&#x2F;span&gt; &lt;span class=&quot;z-constant z-numeric z-integer z-decimal z-file-descriptor z-shell&quot;&gt;0&lt;&#x2F;span&gt; (24&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;fl&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Interfaces&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;LOOP&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;       addr: 0 netmask: 14 mtu: 0&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;tx:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 rx: 00000 txe: 00000 rxe: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;drop:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 autherr: 00000 frame: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;txb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;rxb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;CAN&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt;        addr: 20 netmask: 0 mtu: 248&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;tx:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 rx: 00000 txe: 00000 rxe: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;drop:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 00000 autherr: 00000 frame: 00000&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;           &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;txb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;) &lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;rxb:&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; 0 (0B&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;&#x2F;span&gt;)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Route&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; table&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;0&#x2F;0&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; CAN&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Server&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; task started&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world A&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world B&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world C&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world D&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world E&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world F&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world G&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;Packet&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;&lt;span class=&quot;z-meta z-function-call z-arguments z-shell&quot;&gt; received on MY_SERVER_PORT: Hello world H&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-source z-shell z-bash&quot;&gt;&lt;span class=&quot;z-meta z-function-call z-shell&quot;&gt;&lt;span class=&quot;z-variable z-function z-shell&quot;&gt;...&lt;&#x2F;span&gt;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;同時に送っているpingのRTTがおかしなことになっている場所がいくつかありますが、CSPで疎通が行えていることが確認できました。&lt;&#x2F;p&gt;
+&lt;p&gt;また、このサンプルコードは &lt;code&gt;reboot&lt;&#x2F;code&gt; コマンドを強制的に送りつけるので送信側に管理者権限があれば再起動をし続けるということに...笑&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;h3 id=&quot;wslkaracantong-xin-woxing-usetutoatupu&quot;&gt;WSLからCAN通信を行うセットアップ&lt;a class=&quot;zola-anchor&quot; href=&quot;#wslkaracantong-xin-woxing-usetutoatupu&quot; aria-label=&quot;Anchor link for: wslkaracantong-xin-woxing-usetutoatupu&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;長くなりそう (+ 需要が多少はありそう笑) なので、別記事でまとめたいと思います。&lt;&#x2F;p&gt;
+&lt;p&gt;簡単に書くとCAN関連のカーネルモジュールを入れたWSLのカスタムカーネルをビルドし、WSLからCAN bus analyzerを認識できるようにすればうまくいきました。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;yoctohenoyi-zhi&quot;&gt;Yoctoへの移植&lt;a class=&quot;zola-anchor&quot; href=&quot;#yoctohenoyi-zhi&quot; aria-label=&quot;Anchor link for: yoctohenoyi-zhi&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;Yoctoはbitbakeというパッケージ管理システムを用いて組み込みLinuxをビルドします。
+Linuxにほしい機能を追加するには、bitbakeが認識できるレシピを作成する必要があります。
+今回作成したレイヤー・レシピは次のようになります。&lt;&#x2F;p&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;meta-mcp2517fd&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;spacecubics&#x2F;scsat1-rpi&#x2F;tree&#x2F;main&#x2F;zero&#x2F;meta-mcp2517fd&quot;&gt;このレイヤ&lt;&#x2F;a&gt;は、MCP2517FD用のデバイスツリーをYoctoでビルドするカーネルに組み込むものです。&lt;&#x2F;p&gt;
+&lt;p&gt;実際に追加するデバイス情報は下記の内容です。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&#x2F;*
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt; * Device tree overlay for mcp2517fd&#x2F;can0 on spi0.0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt; *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&#x2F;dts-v1&#x2F;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&#x2F;plugin&#x2F;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&#x2F; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    compatible = &amp;quot;brcm,bcm2835&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    &#x2F;* enable spi for spi0.0 *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    fragment@0 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        target = &amp;lt;&amp;amp;spi0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        __overlay__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            status = &amp;quot;okay&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    &#x2F;* disable spi-dev for spi0.0 *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    fragment@1 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        target = &amp;lt;&amp;amp;spidev0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        __overlay__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            status = &amp;quot;disabled&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    &#x2F;* the interrupt pin of mcp2517fd *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    fragment@2 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        target = &amp;lt;&amp;amp;gpio&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        __overlay__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            mcp2517fd_int_pin: mcp2517fd_int_pin {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                brcm,pins = &amp;lt;25&amp;gt;;       &#x2F;&#x2F; use GPIO25 for interrupt pin
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                brcm,function = &amp;lt;0&amp;gt;;    &#x2F;&#x2F; BCM2835_FSEL_GPIO_IN
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    &#x2F;* the clock&#x2F;oscillator of mcp2517fd *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    fragment@3 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        target-path = &amp;quot;&#x2F;clocks&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        __overlay__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            &#x2F;* external oscillator of mcp2517fd on SPI0.0 *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            clk_mcp2517fd_osc: clk_mcp2517fd_osc {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                compatible = &amp;quot;fixed-clock&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                #clock-cells = &amp;lt;0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                clock-frequency  = &amp;lt;20000000&amp;gt;;  &#x2F;&#x2F; use 20MHz oscillator
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    &#x2F;* the spi config of the can-controller itself binding everything together *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    fragment@4 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        target = &amp;lt;&amp;amp;spi0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        __overlay__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            &#x2F;* needed to avoid dtc warning *&#x2F;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            #address-cells = &amp;lt;1&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            #size-cells = &amp;lt;0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            can0: mcp2517fd@0 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                reg = &amp;lt;0&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                compatible = &amp;quot;microchip,mcp2517fd&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                pinctrl-names = &amp;quot;default&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                pinctrl-0 = &amp;lt;&amp;amp;mcp2517fd_int_pin&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                spi-max-frequency = &amp;lt;20000000&amp;gt;;     &#x2F;&#x2F; up to 20MHz SPI clock speed on mcp2517fd
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                interrupt-parent = &amp;lt;&amp;amp;gpio&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                interrupts = &amp;lt;25 8&amp;gt;;                &#x2F;&#x2F; IRQ_TYPE_LEVEL_LOW : active low
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                clocks = &amp;lt;&amp;amp;clk_mcp2517fd_osc&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;            };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    __overrides__ {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        oscillator = &amp;lt;&amp;amp;clk_mcp2517fd_osc&amp;gt;,&amp;quot;clock-frequency:0&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        spimaxfrequency = &amp;lt;&amp;amp;can0&amp;gt;,&amp;quot;spi-max-frequency:0&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        interrupt = &amp;lt;&amp;amp;mcp2517fd_int_pin&amp;gt;,&amp;quot;brcm,pins:0&amp;quot;,&amp;lt;&amp;amp;can0&amp;gt;,&amp;quot;interrupts:0&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;このコードは、Linuxカーネル内の &lt;code&gt;mcp2515-overlay.dts&lt;&#x2F;code&gt; や &lt;code&gt;mcp251xfd-overlay.dts&lt;&#x2F;code&gt; を参考にして、今回必要な部分のみを取り出したものです。&lt;&#x2F;p&gt;
+&lt;p&gt;このファイルをRaspberryPiのLinuxをビルドするレシピ(&lt;code&gt;linux-raspberrypi_*.bb&lt;&#x2F;code&gt;)を実行する際に追加するように &lt;code&gt;.bbappend&lt;&#x2F;code&gt;ファイルを作成しました。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;SRC_URI += &amp;quot;file:&#x2F;&#x2F;mcp2517fd-overlay.dts;subdir=git&#x2F;arch&#x2F;${ARCH}&#x2F;boot&#x2F;dts&#x2F;overlays&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;対象のファイルをsubdirに配置できます。他にも、patchを用いた追加方法もあります。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;meta-libcsp&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;spacecubics&#x2F;scsat1-rpi&#x2F;tree&#x2F;main&#x2F;zero&#x2F;meta-libcsp&quot;&gt;このレイヤ&lt;&#x2F;a&gt;は、&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;libcsp&#x2F;libcsp&quot;&gt;libcsp&lt;&#x2F;a&gt; を使用するレシピのために共有ライブラリ・ヘッダファイルを作成するためのものです。&lt;&#x2F;p&gt;
+&lt;p&gt;今回ビルド対象は、github上にあるので、下記のようにレシピを書きgithubからクローンするようにしました。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;SRCREV = &amp;quot;${AUTOREV}&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;SRCBRANCH = &amp;quot;develop&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;SRC_URI = &amp;quot;git:&#x2F;&#x2F;github.com&#x2F;libcsp&#x2F;libcsp.git;protocol=https;branch=${SRCBRANCH};&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;このレシピは、URLが示すリポジトリの &lt;code&gt;develop&lt;&#x2F;code&gt; ブランチの最新のコミットを取って来ます。
+そして、ビルド方法にcmakeを指定することで、build → installまで行ってくれます (installターゲットがなければ当然実行されない)。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;inherit cmake ...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;ビルド後のファイルの置き場所を指定する必要があるので、下記のように目的別に指定しました。&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;FILES:${PN}-dbg += &amp;quot;${libdir}&#x2F;.debug&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;FILES:${PN}     += &amp;quot;${libdir}&#x2F;libcsp.so&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;FILES:${PN}-dev += &amp;quot;${includedir}&#x2F;csp&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;それぞれ、debug用、共有ライブラリ使用、ヘッダを使用する開発用と分けています。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;meta-csp (wip)&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;KantaTamura&#x2F;scsat1-rpi&#x2F;tree&#x2F;wip&#x2F;csp-app&#x2F;zero&#x2F;meta-csp&quot;&gt;このレイヤ&lt;&#x2F;a&gt;は、libcspを使用したレシピのためのもので、現在開発途中です。&lt;&#x2F;p&gt;
+&lt;p&gt;現状は、&lt;code&gt;csp-server-client&lt;&#x2F;code&gt;のサーバ側と同様の機能を持つプログラムをsystemdで起動するところまで実装しています。
+今後、ルータ機能やカメラコマンドを発火させる機能を増やしていく予定です。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;meta-arducam (wip)&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;spacecubics&#x2F;scsat1-rpi&#x2F;tree&#x2F;wip&#x2F;arducam&#x2F;zero&#x2F;meta-arducam&quot;&gt;このレイヤ&lt;&#x2F;a&gt;は、Yoctoでビルドするカーネルでカメラモジュールを認識できるようにするための、カーネルモジュールとデバイスツリーを追加するためのもので、現在開発途中です。&lt;&#x2F;p&gt;
+
+&lt;&#x2F;details&gt;
+&lt;h2 id=&quot;9yue-zhong&quot;&gt;9月中&lt;a class=&quot;zola-anchor&quot; href=&quot;#9yue-zhong&quot; aria-label=&quot;Anchor link for: 9yue-zhong&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;zha-huang-ohuisufang-wen&quot;&gt;札幌オフィス訪問&lt;a class=&quot;zola-anchor&quot; href=&quot;#zha-huang-ohuisufang-wen&quot; aria-label=&quot;Anchor link for: zha-huang-ohuisufang-wen&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;インターン期間中space cubics札幌オフィスに招待されたので、3日間現地で作業しました！&lt;&#x2F;p&gt;
+&lt;p&gt;札幌オフィスではlibcspをyoctoに移植する作業をしながら、&quot;普段どんなソフトウェアを使って開発しているのか&quot;や&quot;pull requestを整理してマージする方法&quot;など、現場で開発しているならではの話を聞いたり、僕がおすすめしているソフトウェアを紹介したりしていました。
+個人開発では触ったことの無いgitコマンドなど、色々なことを教えていただき、とても楽しかったです。&lt;&#x2F;p&gt;
+&lt;p&gt;オフィスは机の上にpic-kitなどが無造作においてあったり、オシロスコープや4Kディスプレイがそれぞれの机の上に備え付けられていたりと、個人的にとても理想的な作業環境だな...と憧れました笑&lt;&#x2F;p&gt;
+&lt;p&gt;高専では同じような環境で作業していたのですが、大学に進学してからはハードウェアに触る機会は減って行ってしまったのでとても楽しかったです！&lt;&#x2F;p&gt;
+&lt;p&gt;ご飯にもたくさん誘って頂いたので一部の記録を紹介します。&lt;&#x2F;p&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;オフィス訪問している間の写真など... (飯テロ注意！)&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;34bd1d504d79-20231003.jpg&quot;  alt=&quot;札幌オフィス&quot;&gt;
+    
+    &lt;figcaption&gt;space cubics札幌オフィス - 3部屋ほど借りられていて、今後部屋を合併するらしいです&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;2c3fcb2634ed-20231114.jpg&quot;  alt=&quot;ジンギスカン&quot;&gt;
+    
+    &lt;figcaption&gt;初日はジンギスカンを食べに行きました！ 初ジンギスカン美味しかったです！&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;bfdb0d5dd56c-20231114.jpg&quot;  alt=&quot;linuxビルド&quot;&gt;
+    
+    &lt;figcaption&gt;持ち込んだノートPCにWSL(enable CAN)をセットアップしてなかったので夜中にビルド&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;fe790407a60a-20231114.jpg&quot;  alt=&quot;スープカレー&quot;&gt;
+    
+    &lt;figcaption&gt;2日目お昼はスープカレーを食べました。スパイシーで美味しかったです！&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;0ec8be27ff3e-20231114.jpg&quot;  alt=&quot;サンマ炊き込みご飯&quot;&gt;
+    
+    &lt;figcaption&gt;3日目(最終日)の晩ごはんで旬のサンマを食べました！&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;
+&lt;&#x2F;details&gt;
+&lt;p&gt;札幌オフィスでの作業は水木金の３日間だけでしたが、なんと追加で数日間のホテルも予約していただき、観光もすることができました！とてもありがたかったです！&lt;&#x2F;p&gt;
+&lt;details &gt;
+  &lt;summary&gt;&lt;span&gt;札幌観光&lt;&#x2F;span&gt;&lt;&#x2F;summary&gt;
+  &lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;304d1d7a68b7-20231114.jpg&quot;  alt=&quot;夜パフェ&quot;&gt;
+    
+    &lt;figcaption&gt;札幌では夜パフェ(締めパフェ)が流行っているらしいです(22:00頃)&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;be932a19d3c6-20231114.jpg&quot;  alt=&quot;AOAO&quot;&gt;
+    
+    &lt;figcaption&gt;AOAOというきれいな水族館がホテルの近くにあったので観光&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;&lt;figure&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;storage.googleapis.com&amp;#x2F;zenn-user-upload&amp;#x2F;2582511a75bb-20231114.jpg&quot;  alt=&quot;藻岩山夜景&quot;&gt;
+    
+    &lt;figcaption&gt;新日本3大夜景に選ばれた藻岩山山頂展望台からの景色です(極寒でした...)&lt;&#x2F;figcaption&gt;
+    
+&lt;&#x2F;figure&gt;
+&lt;&#x2F;details&gt;
+&lt;p&gt;とても充実した3日間(+1日)で、一瞬で過ぎ去ってしまってもっと作業していたかったな...と帰りの飛行機で思っていました。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;libcsphenokomituto&quot;&gt;libcspへのコミット&lt;a class=&quot;zola-anchor&quot; href=&quot;#libcsphenokomituto&quot; aria-label=&quot;Anchor link for: libcsphenokomituto&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;yoctoのビルドではcmakeを使用するのですが、libcspのcmakeにはヘッダ・共有ライブラリをインストールする機能がなかったので、この部分を追加し、&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;libcsp&#x2F;libcsp&#x2F;pull&#x2F;446&quot;&gt;マージ&lt;&#x2F;a&gt;されました。&lt;&#x2F;p&gt;
+&lt;p&gt;実際に書いたコード量は短いですが、linuxデフォルトの共有ライブラリロード方法やcmakeの複雑な記法など、ためになることがたくさんありました。&lt;&#x2F;p&gt;
+&lt;p&gt;OSSへのコントリビューションの経験がなかったので、非常に良い経験をさせていただいてありがたかったです！&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;xue-ndakoto&quot;&gt;学んだこと&lt;a class=&quot;zola-anchor&quot; href=&quot;#xue-ndakoto&quot; aria-label=&quot;Anchor link for: xue-ndakoto&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;今回のインターンでは本当に知らないことが多く、下に調べて学んだことの一部を示します。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;DeviceTree (Overlay)&lt;&#x2F;li&gt;
+&lt;li&gt;Kernel Module&lt;&#x2F;li&gt;
+&lt;li&gt;Yocto (bitbake)&lt;&#x2F;li&gt;
+&lt;li&gt;CAN&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;他にも細々としたことを調査したりしていました。&lt;&#x2F;p&gt;
+&lt;p&gt;インターン初日のミーティングで「はじめはわからないことが多いと思うから一日調査に使ってもいいよ」と言ってくださったので、わからないことは基本的に調べて実践を繰り返して学びました。
+おそらく、ミーティングなどで直接聞けばみなさん既知の内容なので、快く教えてくださると思いますが、個人的に&quot;調べる力&quot;や&quot;調べたい内容以外の知識を得られる&lt;sup class=&quot;footnote-reference&quot;&gt;&lt;a href=&quot;#3&quot;&gt;3&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;&quot;ということが大切だと思い、&quot;わからないことも自分で十分に調べて、それでも分からなければ聞く&quot;ということを心がけました。&lt;&#x2F;p&gt;
+&lt;p&gt;8月中旬などはずっと調べていて、あまり進捗がなかったですが、その経験が8月後半・9月での実装で非常に役立ちました。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;gan-xiang&quot;&gt;感想&lt;a class=&quot;zola-anchor&quot; href=&quot;#gan-xiang&quot; aria-label=&quot;Anchor link for: gan-xiang&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;蓋を開けてみれば調べては実践の繰り返しをしていた2ヶ月間でしたが、知らない知識がたくさんあることやそれを学ぶ楽しさがたくさんありました。
+カーネルや通信の仕組みなど、まだまだ知らないことが多く残っているので、これからも勉強しながら低レイヤー関連を触っていきたいです。&lt;&#x2F;p&gt;
+&lt;p&gt;インターン期間中は、研究室のミーティングなどで予定変更が多かったのにも関わらず、調整してくださり、とてもありがたかったです。&lt;&#x2F;p&gt;
+&lt;p&gt;ありがたいことに10月以降もお手伝いという形で続けることになりましたので、残りの実装を行っていきたいと思います！ (10月はCSP用のwireshark dissectorを書いたりしていました)&lt;&#x2F;p&gt;
+&lt;p&gt;来年以降に和歌山で打ち上げ予定とのことなので、ぜひ実際に見てみたいです！&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;zhui-ji-kun-tutakoto&quot;&gt;追記 - 困ったこと&lt;a class=&quot;zola-anchor&quot; href=&quot;#zhui-ji-kun-tutakoto&quot; aria-label=&quot;Anchor link for: zhui-ji-kun-tutakoto&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;困ったことはほとんどありませんでしたが、強いて言うなら来年以降、インターン用の応募欄をホームページに作成していただけると、応募の際のハードルが下がって良いかな？と思いました。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;owarini&quot;&gt;おわりに&lt;a class=&quot;zola-anchor&quot; href=&quot;#owarini&quot; aria-label=&quot;Anchor link for: owarini&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;&#x2F;a&gt;
+&lt;&#x2F;h1&gt;
+&lt;p&gt;来年もサマーインターンを募集するみたいなので、興味を持っていただいた方はぜひ応募してみてください！&lt;&#x2F;p&gt;
+&lt;p&gt;最後になりますがインターンを受け入れていただいたspace cubicsの皆様、本当にありがとうございます！もう少しお世話になります！&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;div class=&quot;footnote-definition&quot; id=&quot;1&quot;&gt;&lt;sup class=&quot;footnote-definition-label&quot;&gt;1&lt;&#x2F;sup&gt;
+&lt;p&gt;RaspberryPi Zeroはカメラ撮影とメインのコンピュータからの通信を自身とPicoに振り分けるルータ的役割を持っている。&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+&lt;div class=&quot;footnote-definition&quot; id=&quot;2&quot;&gt;&lt;sup class=&quot;footnote-definition-label&quot;&gt;2&lt;&#x2F;sup&gt;
+&lt;p&gt;RsapberryPi Picoは温度センサを監視する役割を持っている。&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+&lt;div class=&quot;footnote-definition&quot; id=&quot;3&quot;&gt;&lt;sup class=&quot;footnote-definition-label&quot;&gt;3&lt;&#x2F;sup&gt;
+&lt;p&gt;例えば、DeviceTreeを調べている過程でKernelがどのようにロードしていくのか...といったことが学べました。&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+</content>
+	</entry>
+</feed>
